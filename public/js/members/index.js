@@ -15,118 +15,94 @@ const Members = {
 
 export { Members }; 
 
-//Original code
-async function populateSelect() {
+//Refactor already but not work
+async function fetchData(url) {
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+    return await response.json();
+}
+
+function createOption(value, text) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = text;
+    return option;
+}
+
+function populateSelect(selectElement, options) {
+    options.forEach(option => {
+        selectElement.appendChild(createOption(option.id, option.name_en));
+    });
+}
+
+function clearSelect(selectElement) {
+    selectElement.innerHTML = '<option value="">Select</option>';
+}
+
+async function populateProvinces(data) {
+    const provincesSelect = document.getElementById('provinces');
+    populateSelect(provincesSelect, data);
+    provincesSelect.addEventListener('change', () => handleProvinceChange(data));
+}
+
+function handleProvinceChange(data) {
+    const selectedProvinceId = Number(document.getElementById("provinces").value);
+    const amphureSelect = document.getElementById('amphureSelect');
+    clearSelect(amphureSelect);
+
+    if (selectedProvinceId) {
+        amphureSelect.disabled = false;
+        const selectedProvince = data.find(province => province.id === selectedProvinceId);
+        populateSelect(amphureSelect, selectedProvince.amphure);
+        amphureSelect.addEventListener('change', () => handleAmphureChange(data));
+    } else {
+        amphureSelect.disabled = true;
+    }
+}
+
+function handleAmphureChange(data) {
+    const selectedAmphureId = Number(document.getElementById('amphureSelect').value);
+    const tambolSelect = document.getElementById('tambolSelect');
+    clearSelect(tambolSelect);
+
+    if (selectedAmphureId) {
+        tambolSelect.disabled = false;
+        const selectedAmphure = data
+            .flatMap(province => province.amphure)
+            .find(amphure => amphure.id === selectedAmphureId);
+        
+        populateSelect(tambolSelect, selectedAmphure.tambon);
+        tambolSelect.addEventListener('change', updateZipCode);
+        setupZipCodeSubmission();
+    } else {
+        tambolSelect.disabled = true;
+    }
+}
+
+function updateZipCode() {
+    const zipcode = document.getElementById('tambolSelect').value;
+    document.getElementById("zipcode").textContent = `ZipCode: ${zipcode}`;
+}
+
+function setupZipCodeSubmission() {
+    const submitZipcode = document.getElementById('save');
+    const inputZipcode = document.getElementById('txtZipCode');
+    const tambolSelect = document.getElementById('tambolSelect');
+
+    submitZipcode.addEventListener('click', () => {
+        inputZipcode.value = tambolSelect.value;
+    });
+}
+
+async function initializeSelects() {
     try {
-        // Step 1: Fetch data from the API
-        const response = await fetch('https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province_with_amphure_tambon.json');
-        
-        // Check if the request was successful
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-
-        const data = await response.json();
-
-        // Step 2: Process the data (if needed)
-        // Assume the data is an array of objects with 'id' and 'name' properties
-
-        // Step 3: Populate the select element
-        const provinces = document.getElementById('provinces');        
-        
-        data.forEach(_province => {
-            const option = document.createElement('option');
-            option.value = _province.id;  // Set the value attribute
-            option.textContent = _province.name_en;  // Set the display text
-            provinces.appendChild(option);  // Add the option to the select
-        });
-
-        document.getElementById('provinces').addEventListener('change', () => {
-    
-            let selectedProvice = Number(document.getElementById("provinces").value);
-            
-            if (selectedProvice) {   
-                amphureSelect.disabled = false;
-        
-                let provinceIndex = data[selectedProvice - 1].amphure;
-                
-                const Amphure = document.getElementById('amphureSelect');        
-                
-                
-                provinceIndex.forEach(_amphure => {
-                    const option = document.createElement('option');
-                    option.value = _amphure.id;  // Set the value attribute
-                    option.textContent = _amphure.name_en;  // Set the display text
-                    Amphure.appendChild(option);  // Add the option to the select
-                });
-
-                Amphure.addEventListener('change', () => {
-                    let selectedAmphure = Number(Amphure.value);
-
-                    if (selectedAmphure) {
-                        tambolSelect.disabled = false;
-
-                        const Tambol = document.getElementById('tambolSelect');
-
-                        data.forEach(_amphure => {
-                            
-                            let _tambol = _amphure.amphure.filter(_amphureId => {
-                                return _amphureId.id == selectedAmphure;
-                            });
-                            if (_tambol.length > 0) {
-                                _tambol.forEach(_Tambol => {
-                                    _Tambol.tambon.forEach(T3 => {
-                                        const optionFortambol = document.createElement('option');
-                                        optionFortambol.value = T3.zip_code;  // Set the value attribute
-                                        optionFortambol.textContent = T3.name_en;  // Set the display text
-                                        Tambol.appendChild(optionFortambol);  // Add the option to the select
-                                    });
-                                });                                
-                            }                            
-                        });
-                        
-                        Tambol.addEventListener('change', () => {
-                            document.getElementById("zipcode").innerHTML = `ZipCode : ${Tambol.value}`;
-                        })
-                        
-                        const submitZipcode = document.getElementById('save');
-                        const inputZipcode = document.getElementById('txtZipCode');
-                        const modalForm = document.getElementById('exampleModal');
-                        submitZipcode.addEventListener('click', (zip) => {
-                            const zipCodevalue = Tambol.value;
-                            inputZipcode.value = zipCodevalue;
-                        });
-                    }
-                });
-            }
-        });
-
-        
+        const data = await fetchData('https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province_with_amphure_tambon.json');
+        await populateProvinces(data);
     } catch (error) {
         console.error('Error fetching data:', error);
     }
-
 }
 
-window.onload = populateSelect;
-
-//example
-// function amp(data) {
-//     // console.log(data);
-//     let _Amphure = data[0].amphure;
-//     _Amphure.forEach(_amphure => {
-//       console.log(_amphure);
-//     })
-//   };
-
-//example 2
-// ProvinceData.forEach((_amp) => {
-// console.log(_amp);
-//     let a3 = _amp.amphure.filter(_ampId => {
-//       return _ampId.id == 1001;
-//     });
-//     if (a3.length > 0) {
-//       console.log("Hi");
-//       console.log(a3);
-//     }
-//   });
+window.onload = initializeSelects;
