@@ -54,8 +54,8 @@
           <button type="button" id="btnAdd" class="btn btn-primary">ADD</button>
           <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
             ZipTool
-          </button> 
-    
+          </button>
+
         </div>
       </div>
 
@@ -89,7 +89,7 @@
     </div>
     <div class="row">
       <!-- Button trigger modal -->
-      
+
       <!-- Modal -->
       <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -99,11 +99,29 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              ...
+              <label for="provinces">Province</label>
+              <select id="provinces" name="provinces">
+                <option value="">Select province</option>
+              </select>
+            </div>
+            <div class="modal-body">
+              <label for="amphureSelect">Amphure</label>
+              <select id="amphureSelect" name="amphureSelect" disabled>
+                <option value="">Select amphure</option>
+              </select>
+            </div>
+            <div class="modal-body">
+              <label for="tambolSelect">Tambol</label>
+              <select id="tambolSelect" name="tambolSelect" disabled>
+                <option value="">Select tambol</option>
+              </select>
+            </div>
+            <div class="modal-body" id="zipcode">
+              ZipCode :
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary">Save changes</button>
+              <button type="button" class="btn btn-primary" id="save" data-bs-dismiss="modal">Save changes</button>
             </div>
           </div>
         </div>
@@ -115,6 +133,7 @@
       crossorigin="anonymous"></script>
 
     <script type="module" src="/js/index.js" defer></script>
+
 </body>
 
 </html>
